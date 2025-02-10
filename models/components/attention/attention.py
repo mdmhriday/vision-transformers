@@ -21,7 +21,7 @@ class MultiHeadAttention(nn.Module):
         qkv = qkv.reshape(B, N, 3, self.num_heads, self.h_dim).permute(2, 0, 3, 1, 4)
         q, k, v = qkv[0], qkv[1], qkv[2] # for each B, num_heads, N, h_dim
 
-        attn = (Q @ K.transpose(-2, -1)) * self.scale
+        attn = (q @ k.transpose(-2, -1)) * self.scale
         attn = F.softmax(attn, dim=-1)
         attn = self.dropout(attn)
 
