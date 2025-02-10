@@ -27,9 +27,11 @@ class TransformerBlock(nn.Module):
 
     def forward(self, input):
         x = self.norm1(input)
-        x = x + self.attn(x)
+        attn_output = self.attn(x)
+        x = x + attn_output
         x = self.norm2(x)
-        x = x + self.ffb(x)
+        ffb_output = self.ffb(x)
+        x = x + ffb_output
         return x
 
 class Transformer(nn.Module):
