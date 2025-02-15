@@ -43,5 +43,5 @@ class Transformer(nn.Module):
 
     def forward(self, x):
         for layer in self.layers:
-            x = layer(input)
+            x = layer(x)
             return x
