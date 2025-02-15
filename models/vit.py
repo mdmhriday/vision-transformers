@@ -20,7 +20,7 @@ class VisionTransformer(nn.Module):
         self.patch_embed = PatchEmbedding(img_size, patch_size, in_channels, embed_dim)
         self.transformer = Transformer(num_layers, embed_dim, num_heads, hidden_dim, dropout)
         self.cls_token = self.patch_embed.class_token
-        self.fc = nn.Linear(dim, num_classes)
+        self.fc = nn.Linear(embed_dim, num_classes)  # Fixed dim → embed_dim
 
     def forward(self, input):
         x = self.patch_embed(input)
