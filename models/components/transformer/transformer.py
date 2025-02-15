@@ -35,7 +35,7 @@ class TransformerBlock(nn.Module):
         return x
 
 class Transformer(nn.Module):
-    def __init__(Self, num_layers, dim, num_heads=8, hidden_dim=None, dropout=0.1):
+    def __init__(self, num_layers, dim, num_heads=8, hidden_dim=None, dropout=0.1):
         super().__init__()
         self.layers = nn.ModuleList([
             TransformerBlock(dim, num_heads, hidden_dim, dropout) for _ in range(num_layers)
