@@ -1,6 +1,6 @@
 import argparse
 from models.vit import VisionTransformer
-from datasets.dataloader import CustomDataset
+from datasets.dataset import CustomDataset
 from training.train import Train
 
 def parse_args():
@@ -26,7 +26,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    data_loader = ImageDataLoader(
+    data_loader = CustomDataset(
         dataset_name='CIFAR10', 
         batch_size=args.batch_size, 
         img_size=args.img_size, 
