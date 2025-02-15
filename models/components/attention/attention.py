@@ -7,7 +7,7 @@ class MultiHeadAttention(nn.Module):
     def __init__(self, dim, num_heads=8, dropout=0.1):
         super().__init__()
         self.num_heads = num_heads
-        self.dropout = dropout
+        self.dropout = nn.Dropout(dropout)
         self.h_dim = dim // num_heads
         self.qkv = nn.Linear(dim, dim*3, bias=False)
         self.linear = nn.Linear(dim, dim)
