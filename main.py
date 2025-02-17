@@ -17,7 +17,7 @@ def parse_args():
     parser.add_argument('--dropout', type=float, default=0.1, help='Dropout rate (default: 0.1)')
     parser.add_argument('--batch_size', type=int, default=32, help='Batch size for training (default: 32)')
     parser.add_argument('--learning_rate', type=float, default=1e-4, help='Learning rate (default: 1e-4)')
-    parser.add_argument('--num_epochs', type=int, default=1000, help='Number of epochs (default: 10)')
+    parser.add_argument('--num_epochs', type=int, default=10, help='Number of epochs (default: 10)')
     parser.add_argument('--num_workers', type=int, default=4, help='Number of data loader workers (default: 4)')
     parser.add_argument('--checkpoint_dir', type=str, default='./checkpoints', help='Directory to save checkpoints')
     parser.add_argument('--weight_decay', type=float, default=1e-4, help='Weight decay for optimizer')
