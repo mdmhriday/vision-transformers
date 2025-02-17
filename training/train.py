@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+from ..utils.logging import setup_logger
 
 import os
 from tqdm import tqdm
@@ -32,6 +33,8 @@ class Train:
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.AdamW(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
+        self.logger = setup_logger()
+
     def train_epoch(self):
         self.model.train()
         running_loss = 0.0
@@ -53,8 +56,9 @@ class Train:
             correct += (predicted == labels).sum().item()
 
         avg_loss = running_loss / len(self.train_loader)
-        accuracy = 100 * correct / total  # Fixed typo
+        accuracy = 100 * correct / total
 
+        self.logger.info(f"Train Loss: {avg_loss:.4f}, Train Accuracy: {accuracy:.2f}%")
         return avg_loss, accuracy
 
     def validate_epoch(self):
@@ -63,7 +67,7 @@ class Train:
         correct = 0
         total = 0
         with torch.no_grad():
-            for images, labels in self.val_loader:  # Fixed incorrect enumerate()
+            for images, labels in self.val_loader: 
                 images, labels = images.to(self.device), labels.to(self.device)
 
                 outputs = self.model(images)
@@ -78,16 +82,15 @@ class Train:
         avg_loss = running_loss / len(self.val_loader)
         accuracy = 100 * correct / total
 
+        self.logger.info(f"Val Loss {avg_loss:.4f}, Val Accuracy {accuracy:.4f}")
+
         return avg_loss, accuracy
 
     def save_checkpoint(self, epoch, best_val_acc):
-        # Ensure that the save path directory exists
         if self.save_path and not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
         
         checkpoint_path = f"{self.save_path}/checkpoint_epoch_{epoch}_val_acc_{best_val_acc:.4f}.pth"
-        
-        # Saving the checkpoint
         torch.save({
             'epoch': epoch,
             'model_state_dict': self.model.state_dict(),
@@ -95,19 +98,17 @@ class Train:
             'best_val_acc': best_val_acc,
         }, checkpoint_path)
         
-        print(f"Model checkpoint saved to {checkpoint_path}")
+        self.logger.info(f"Model checkpoint saved to {checkpoint_path}")
 
     def train(self):
         best_val_acc = 0.0
         for epoch in range(self.num_epoch):
             train_loss, train_acc = self.train_epoch()
-            print(f"Epoch {epoch+1}/{self.num_epoch} | Train Loss: {train_loss:.4f}, Train Accuracy: {train_acc:.2f}%")
 
             val_loss, val_acc = self.validate_epoch()
-            print(f"Epoch {epoch+1}/{self.num_epoch} | Val Loss: {val_loss:.4f}, Val Accuracy: {val_acc:.2f}%")
 
             if val_acc > best_val_acc:
                 best_val_acc = val_acc
                 self.save_checkpoint(epoch, best_val_acc)
 
-        print("Training complete!")
+        self.logger.info("Training complete!")
