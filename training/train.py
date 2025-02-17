@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from ..utils.logging import setup_logger
+from .utils.logging import setup_logger
+from .utils.plot import Plot
 
 import os
 from tqdm import tqdm
@@ -34,6 +35,12 @@ class Train:
         self.optimizer = optim.AdamW(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
         self.logger = setup_logger()
+        self.plotter = Plot(save_dir="./logs")  
+
+        self.train_losses = []
+        self.val_losses = []
+        self.train_accuracies = []
+        self.val_accuracies = []
 
     def train_epoch(self):
         self.model.train()
@@ -107,8 +114,16 @@ class Train:
 
             val_loss, val_acc = self.validate_epoch()
 
+            self.train_losses.append(train_loss)
+            self.val_losses.append(val_loss)
+            self.train_accuracies.append(train_acc)
+            self.val_accuracies.append(val_acc)
+
             if val_acc > best_val_acc:
                 best_val_acc = val_acc
                 self.save_checkpoint(epoch, best_val_acc)
+
+            self.plotter.plot("Loss", self.train_losses, self.val_losses)
+            self.plotter.plot("Accuracy", self.train_accuracies, self.val_accuracies)
 
         self.logger.info("Training complete!")
