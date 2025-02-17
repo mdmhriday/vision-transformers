@@ -35,7 +35,7 @@ class Train:
         self.optimizer = optim.AdamW(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
         self.logger = setup_logger()
-        self.plotter = Plot(save_dir="./logs")  
+        self.plotter = Plot(save_dirs="./log")  
 
         self.train_losses = []
         self.val_losses = []
@@ -93,23 +93,32 @@ class Train:
 
         return avg_loss, accuracy
 
-    def save_checkpoint(self, epoch, best_val_acc):
+    def save_checkpoint(self, epoch, max_epochs, best_val_acc):
         if self.save_path and not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
-        
-        checkpoint_path = f"{self.save_path}/checkpoint_epoch_{epoch}_val_acc_{best_val_acc:.4f}.pth"
+
+        if epoch == max_epochs:
+            checkpoint_path = f"{self.save_path}/final.pth"
+        else:
+            checkpoint_path = f"{self.save_path}/checkpoint_epoch_{epoch}_val_acc_{best_val_acc:.4f}.pth"
+
         torch.save({
             'epoch': epoch,
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             'best_val_acc': best_val_acc,
         }, checkpoint_path)
-        
-        self.logger.info(f"Model checkpoint saved to {checkpoint_path}")
+
+        if epoch == max_epochs:
+            self.logger.info(f"Final Model saved to {checkpoint_path}")
+        else:
+            self.logger.info(f"Model checkpoint saved to {checkpoint_path}")
 
     def train(self):
         best_val_acc = 0.0
+        final_epoch = 0
         for epoch in range(self.num_epoch):
+            final_epoch = epoch
             train_loss, train_acc = self.train_epoch()
 
             val_loss, val_acc = self.validate_epoch()
@@ -121,9 +130,12 @@ class Train:
 
             if val_acc > best_val_acc:
                 best_val_acc = val_acc
-                self.save_checkpoint(epoch, best_val_acc)
+                if self.num_epoch % 10 == 0:
+                    self.save_checkpoint(epoch, self.num_epoch, best_val_acc)
 
-            self.plotter.plot("Loss", self.train_losses, self.val_losses)
-            self.plotter.plot("Accuracy", self.train_accuracies, self.val_accuracies)
+        self.save_checkpoint(final_epoch, self.num_epoch, best_val_acc)
+
+        self.plotter.plot("Loss", self.train_losses, self.val_losses)
+        self.plotter.plot("Accuracy", self.train_accuracies, self.val_accuracies)
 
         self.logger.info("Training complete!")
